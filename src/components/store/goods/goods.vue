@@ -104,6 +104,7 @@ export default {
           if(!event._constructed){
             return;
           }
+          
           let foodList = this.$refs.boxRight.getElementsByClassName('box-item-hook');
           let el = foodList[i];
           this.rightScroll.scrollToElement(el, 300);
