@@ -3,7 +3,8 @@
       <!-- 左侧导航 -->
       <div class="box-left" ref="boxLeft">
         <ul class="left-menu">
-            <li v-for="(item,index) in goods" :class="{'active':newIndex==index}" :key="index" @click="selectMenu(index,$event)">
+            <li v-for="(item,index) in goods" :class="{'active':newIndex==index}" 
+            :key="index" @click="selectMenu(index,$event)">
                 <div class="menu-txt">   
                     <span v-show="item.type>0" class="icon" :class="iconArr[item.type]"></span>
                     {{item.name}}
@@ -36,112 +37,127 @@
                         </div>
                         <!-- 购买数量 -->
                         <div class="cart-control">
-                            <cartControl></cartControl>
+                            <cartControl :food="bocItem"></cartControl>
                         </div>
                     </li>
                 </ul>
             </li>
         </ul>
       </div>
+      
+      <!-- 购物车 -->
+      <div class="cart-box">
+        <cart :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice"></cart>
+      </div>
   </div>
 </template>
 
 <script>
-import cartControl from "../../common/cartcontrol/cartcontrol"
-import BScroll from 'better-scroll'
+import cartControl from "../../common/cartcontrol/cartcontrol";
+import BScroll from "better-scroll";
+import cart from "../../common/cart/cart";
 
 const ERR_OK = 0;
 
 export default {
   name: "goods",
+  props:{
+      seller:{
+          type:Object
+      }
+  },
   data() {
     return {
-        goods:{},
-        iconArr:["special","decrease","discount","guarantee","invoice"], //左侧优惠信息所对应的class
-        coordinates:[],  //保存右侧每个菜单的相对于父元素坐标的数组
-        offsettY:0,  //右侧当前滑动的坐标
+      goods: {},
+      iconArr: ["special", "decrease", "discount", "guarantee", "invoice"], //左侧优惠信息所对应的class
+      coordinates: [], //保存右侧每个菜单的相对于父元素坐标的数组
+      offsettY: 0 //右侧当前滑动的坐标
     };
   },
   components: {
-    cartControl:cartControl
+    cartControl: cartControl,
+    cart:cart
   },
-  computed:{
-      newIndex(){
-        for(let i=0;i<this.coordinates.length;i++){
-            let h1 =this.coordinates[i];
-            let h2=this.coordinates[i+1];
-            if(!h2 || (this.offsettY>=h1 && this.offsettY<h2)){
-                return i
-            }
+  computed: {
+    /**左侧当前选中菜单的下标 */
+    newIndex() {
+      for (let i = 0; i < this.coordinates.length; i++) {
+        let h1 = this.coordinates[i];
+        let h2 = this.coordinates[i + 1];
+        if (!h2 || (this.offsettY >= h1 && this.offsettY < h2)) {
+          return i;
         }
-        return 0
       }
+      return 0;
+    }
   },
-  created(){
+  created() {
     this.$http.get("http://localhost:8080/api/goods").then(
       response => {
         response = response.body;
         if (response.errno == ERR_OK) {
           this.goods = response.data;
-          this.$nextTick(()=>{
+          this.$nextTick(() => {
             this._initScroll();
             this._getCoordinates();
-          })
+          });
         }
       },
       response => {
         // error callback
       }
     );
-   
   },
   mounted() {
-      
-  },
-  methods:{
-      /*左侧菜单选项*/ 
-      selectMenu(i,event){
-          if(!event._constructed){
-            return;
-          }
-          
-          let foodList = this.$refs.boxRight.getElementsByClassName('box-item-hook');
-          let el = foodList[i];
-          this.rightScroll.scrollToElement(el, 300);
-      },
-      _initScroll(){
-        /*初始化左侧菜单列表*/
-        this.leftScroll = new BScroll(this.$refs.boxLeft,{
-            click:true
-        });
 
-        /*初始化右侧商品列表*/
-        this.rightScroll = new BScroll(this.$refs.boxRight,{
-            probeType:3,
-            startY: -this.$refs.boxRight.getElementsByClassName("box-item-hook")[0].offsetHeight
-        });
-        /*右侧商品绑定滚动事件*/
-        this.rightScroll.on("scroll",(ops)=>{
-            this.offsettY=Math.abs(Math.floor(ops.y));
-        })
-      },
-      /*获得右侧每个菜单的相对于父元素坐标*/
-      _getCoordinates(){
-        let boxRight=this.$refs.boxRight;
-        let foodsArr = boxRight.getElementsByClassName("box-item-hook");
-        for(let i=0;i<foodsArr.length;i++){
-            this.coordinates.push(foodsArr[i].offsetTop)
-        }
-        this.offsettY=this.coordinates[1]; //设置右侧滑动的坐标（让左侧菜单第二项为默认选中状态）
+  },
+  methods: {
+    /*左侧菜单选项*/
+    selectMenu(i, event) {
+      if (!event._constructed) {
+        return;
       }
+
+      let foodList = this.$refs.boxRight.getElementsByClassName(
+        "box-item-hook"
+      );
+      let el = foodList[i];
+      this.rightScroll.scrollToElement(el, 300);
+    },
+    _initScroll() {
+      /*初始化左侧菜单列表*/
+      this.leftScroll = new BScroll(this.$refs.boxLeft, {
+        click: true
+      });
+
+      /*初始化右侧商品列表*/
+      this.rightScroll = new BScroll(this.$refs.boxRight, {
+        click: true,
+        probeType: 3,
+        startY: -this.$refs.boxRight.getElementsByClassName("box-item-hook")[0]
+          .offsetHeight
+      });
+      /*右侧商品绑定滚动事件*/
+      this.rightScroll.on("scroll", ops => {
+        this.offsettY = Math.abs(Math.floor(ops.y));
+      });
+    },
+    /*获得右侧每个菜单的相对于父元素坐标*/
+    _getCoordinates() {
+      let boxRight = this.$refs.boxRight;
+      let foodsArr = boxRight.getElementsByClassName("box-item-hook");
+      for (let i = 0; i < foodsArr.length; i++) {
+        this.coordinates.push(foodsArr[i].offsetTop);
+      }
+      this.offsettY = this.coordinates[1]; //设置右侧滑动的坐标（让左侧菜单第二项为默认选中状态）
+    }
   }
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="stylus">
-@import '../../../common/stylus/mixin';
-
+@import '../../../common/stylus/mixin'
 .goods
     height 100%
     overflow hidden
@@ -151,7 +167,7 @@ export default {
         background-color #F3F5F7
         float left
         font-size 12px
-        overflow hidden 
+        overflow hidden
         .left-menu
             li
                 width 100%
@@ -159,21 +175,21 @@ export default {
                 position relative
                 padding 12px
                 box-sizing border-box
-                display: table
+                display table
                 line-height 14px
                 .menu-txt
-                    display:table-cell 
-                    vertical-align:middle  
-                    text-align: left  /*设置文本水平居中*/  
-                    width:100%
+                    display table-cell
+                    vertical-align middle
+                    text-align left /* 设置文本水平居中 */
+                    width 100%
                     .icon
-                        display: inline-block
-                        vertical-align: top
-                        width: 12px
-                        height: 12px
-                        margin-right: 2px
-                        background-size: 12px 12px
-                        background-repeat: no-repeat
+                        display inline-block
+                        vertical-align top
+                        width 12px
+                        height 12px
+                        margin-right 2px
+                        background-size 12px 12px
+                        background-repeat no-repeat
                         margin-top 1px
                         &.special
                             bg-image('special_3') // 使用bg-image($url)函数
@@ -187,22 +203,22 @@ export default {
                             bg-image('invoice_3') // 使用bg-image($url)函数
             li.active
                 background-color #fff
-            li:after    
-                content " "
+            li:after
+                content ' '
                 display block
                 width 56px
                 height 1px
-                background-color rgba(7,17,27,0.1)  
+                background-color rgba(7, 17, 27, 0.1)
                 position absolute
                 bottom -1px
                 left 12px
-            li.active:after 
+            li.active:after
                 display none
     .box-right
         width 100%
         height 100%
         padding-left 80px
-        box-sizing border-box 
+        box-sizing border-box
         .box-item
             .box-title
                 width 100%
@@ -211,10 +227,10 @@ export default {
                 line-height 26px
                 background-color #f3f5f7
                 position relative
-                color rgb(147,153,159)
+                color rgb(147, 153, 159)
                 padding-left 14px
                 &:before
-                    content ""
+                    content ''
                     display inline-block
                     width 3px
                     height 100%
@@ -227,16 +243,16 @@ export default {
                 box-sizing border-box
                 width 100%
                 height 100%
-                li 
+                li
                     padding 18px 0
                     box-sizing border-box
                     width 100%
                     height 100%
                     position relative
-                    box-sizing: border-box;
+                    box-sizing border-box
                     .cart-control
                         position absolute
-                        bottom 18px
+                        bottom 12px
                         right 0
                     .good-icon
                         width 57px
@@ -245,17 +261,17 @@ export default {
                     .good-message
                         width 100%
                         padding-left 67px
-                        box-sizing: border-box;
+                        box-sizing border-box
                         .good-name
                             font-size 14px
                             line-height 14px
                             padding 2px 0 0 0px
-                            color rgb(7,17,27)
-                        .good-description,.good-sellCount
+                            color rgb(7, 17, 27)
+                        .good-description, .good-sellCount
                             font-size 10px
                             line-height 10px
-                            padding 8px  0px 0px 0px
-                            color rgb(147,153,159)
+                            padding 8px 0px 0px 0px
+                            color rgb(147, 153, 159)
                             .good-rating
                                 margin-left 12px
                         .good-description
@@ -267,27 +283,35 @@ export default {
                             font-weight 700
                             line-height 14px
                             color #F01414
-                            span 
+                            vertical-align text-bottom
+                            span
                                 font-weight normal
                                 font-size 10px
-                                display: inline-block
-                                vertical-align: bottom
+                                display inline-block
+                                vertical-align bottom
                         .good-oldPrice
-                            font-size 14px
+                            font-size 10px
                             font-weight 700
                             line-height 14px
                             margin-left 8px
-                            color rgb(147,153,159)
+                            color rgb(147, 153, 159)
                             text-decoration line-through
-                li:after 
-                    content " "
+                            vertical-align bottom
+                li:after
+                    content ' '
                     display inline-block
                     width 100%
                     height 1px
                     position absolute
                     top 0
                     left 0
-                    background-color rgba(7,17,27,0.1)
-                li:first-child:after 
+                    background-color rgba(7, 17, 27, 0.1)
+                li:first-child:after
                     display none
+.cart-box
+  width 100%
+  height 58px
+  position fixed
+  bottom 0
+  left 0
 </style>

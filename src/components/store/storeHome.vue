@@ -23,13 +23,9 @@
     <div class="content">
       <transition name="fade-nav">
         <keep-alive>
-			            <router-view></router-view>
+			      <router-view :seller="seller"></router-view>
 			  </keep-alive>
       </transition>
-    </div>
-    <!-- 购物车 -->
-    <div class="cart-box">
-      <cart></cart>
     </div>
   </div>
 
@@ -37,7 +33,6 @@
 
 <script>
 import header from "./header/header";
-import cart from "../common/cart/cart"
 const ERR_OK = 0;
 
 export default {
@@ -62,8 +57,7 @@ export default {
     );
   },
   components: {
-    storeHeader: header,
-    cart:cart
+    storeHeader: header
   },
   mounted() {
     
@@ -119,18 +113,13 @@ export default {
   top 0
   left 0
   >div
-    position: absolute;
-    width: 100%;
-    top: 0;
-    left: 0;
-    padding-top: 174px;
+    position: absolute
+    width: 100%
+    top: 0
+    left: 0
+    padding-top: 174px
     padding-bottom 45px
-    box-sizing: border-box;
-    height: 100%;
-.cart-box
-  width 100%
-  height 58px
-  position fixed
-  bottom 0
-  left 0
+    box-sizing: border-box
+    height: 100%
+
 </style>

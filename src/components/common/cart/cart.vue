@@ -8,7 +8,7 @@
       <div class="cart-price">
         <span class="shop-price">￥0</span>
         <span class="lone"></span>
-        <span class="cost">另需配送费￥4元</span>
+        <span class="cost">另需配送费￥{{deliveryPrice}}元</span>
       </div>
       <!-- 需要支付的价格 -->
       <div class="cart-total">还差￥20起送</div>
@@ -20,10 +20,30 @@
 
 export default {
   name: "cart",
+  props:{
+    selectFoods:{ //购物车中商品的数组
+      type:Array,
+      default(){
+        return[]
+      }
+    },
+    deliveryPrice:{ //运费
+      type:Number,
+      default:0
+    },
+    minPrice:{  //起送价格
+      type:Number,
+      default:0
+    }
+
+  },
   data() {
     return {
       
     };
+  },
+  computed:{
+    
   },
   created() {
     
