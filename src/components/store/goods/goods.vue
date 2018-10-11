@@ -47,7 +47,7 @@
       
       <!-- 购物车 -->
       <div class="cart-box">
-        <cart :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice"></cart>
+        <cart  :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice" :select-foods="selectFoods"></cart>
       </div>
   </div>
 </template>
@@ -68,10 +68,11 @@ export default {
   },
   data() {
     return {
-      goods: {},
+      goods: [],
       iconArr: ["special", "decrease", "discount", "guarantee", "invoice"], //左侧优惠信息所对应的class
       coordinates: [], //保存右侧每个菜单的相对于父元素坐标的数组
-      offsettY: 0 //右侧当前滑动的坐标
+      offsettY: 0, //右侧当前滑动的坐标
+      selectFood:[] //购物车中商品的数组
     };
   },
   components: {
@@ -89,6 +90,17 @@ export default {
         }
       }
       return 0;
+    },
+    selectFoods(){  //当商品数量为true时将当前商品添加到需要存入购物车商品数组中
+        let foods=[];
+        this.goods.forEach((good)=>{
+            good.foods.forEach((food)=>{
+                if(food.count){
+                    foods.push(food);
+                } 
+            })  
+        });
+        return foods;     
     }
   },
   created() {

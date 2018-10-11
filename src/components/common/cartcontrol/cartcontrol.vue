@@ -1,12 +1,20 @@
 <template>
   <div class="cartcontrol">
-      <span v-if="isShowCount"  class="cart-btn icon-remove_circle_outline"></span>
-      <span v-if="isShowCount" class="cart-count">{{count}}</span>
-      <div class="cart-btn icon-add_circle" @click.stop.prevent="addCart"></div>
+      <transition name="fade">
+        <div class="fadeBox" v-show="isShowCount"  @click="reduceCart">
+            <transition name="rotate">
+              <span v-show="isShowCount" class="cart-btn icon-remove_circle_outline inner"></span>
+            </transition> 
+        </div>
+      </transition>
+      <span v-show="isShowCount" class="cart-count">{{food.count}}</span>
+      <div class="cart-btn icon-add_circle" @click="addCart"></div>
   </div>
 </template>
 
 <script>
+import Vue from "vue"
+
 export default {
   name: "cartcontrol",
   props: {
@@ -16,27 +24,37 @@ export default {
   },
   data() {
     return {
-      count: 1
     };
   },
   computed: {
     isShowCount() {
-      if (this.count > 0) {
+      if (this.food.count > 0) {
         return true;
       } else {
         return false;
       }
     }
   },
-  mounted(){
-    console.log(this.food)
-  },
   methods: {
     addCart(event) {
       if (!event._constructed) {
         return;
       }
-      console.log(this.count);
+      if(!this.food.count){
+        Vue.set(this.food,"count",1);
+      }else{
+        this.food.count++;
+      }
+      this.$emit("foodObj",this.food); //将food对象传递给父组件
+    },
+    reduceCart(event){
+      if (!event._constructed) {
+        return;
+      }
+      if(this.food.count>0){
+        this.food.count--;
+      }
+      this.$emit("foodObj",this.food);  //将food对象传递给父组件
     }
   }
 };
@@ -48,6 +66,8 @@ export default {
 <style scoped lang="stylus">
 @import '../../../common/stylus/icon'
 .cartcontrol
+  .fadeBox
+    display inline-block
   .cart-btn
     font-size 24px
     line-height 24px
@@ -60,4 +80,27 @@ export default {
     text-align center
     display inline-block
     color rgb(147, 153, 159)
+
+.fade-enter
+  transform translateX(30px)
+  opacity 0
+.fade-enter-active,.fade-leave-active
+  transition: all 0.5s
+.fade-leave
+  transform translateX(0px)
+  opacity 1
+.fade-leave-active
+  transform translateX(30px)
+  opacity 0
+
+
+.rotate-enter
+  transform rotate(180deg)
+.rotate-enter-active,.rotate-leave-active
+  transition: all 0.4s
+.rotate-leave
+  transform rotate(0deg)
+.rotate-leave-active
+  transform rotate(180deg)
+
 </style>
