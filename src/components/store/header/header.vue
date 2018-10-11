@@ -152,7 +152,7 @@
   position fixed
   top 0px
   left 0px
-  z-index 100
+  z-index 150
   width 100%
   height 100%
   overflow auto
