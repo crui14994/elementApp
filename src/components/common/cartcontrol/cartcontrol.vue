@@ -1,14 +1,14 @@
 <template>
   <div class="cartcontrol">
       <transition name="fade">
-        <div class="fadeBox" v-show="isShowCount"  @click="reduceCart">
+        <div class="fadeBox" v-show="isShowCount">
             <transition name="rotate">
-              <span v-show="isShowCount" class="cart-btn icon-remove_circle_outline inner"></span>
+              <span v-show="isShowCount" class="cart-btn icon-remove_circle_outline" @click.stop.prevent="reduceCart"></span>
             </transition> 
         </div>
       </transition>
       <span v-show="isShowCount" class="cart-count">{{food.count}}</span>
-      <div class="cart-btn icon-add_circle" @click="addCart"></div>
+      <div class="cart-btn icon-add_circle" @click.stop.prevent="addCart"></div>
   </div>
 </template>
 
@@ -43,18 +43,16 @@ export default {
       if(!this.food.count){
         Vue.set(this.food,"count",1);
       }else{
-        this.food.count++;
+        this.food.count+=1;
       }
-      this.$emit("foodObj",this.food); //将food对象传递给父组件
     },
     reduceCart(event){
-      if (!event._constructed) {
-        return;
+      if(!event._constructed){//如果不存在这个属性,则为原生点击事件，不执行下面的函数
+        return
       }
-      if(this.food.count>0){
-        this.food.count--;
+      if(this.food.count) {
+          this.food.count--;
       }
-      this.$emit("foodObj",this.food);  //将food对象传递给父组件
     }
   }
 };

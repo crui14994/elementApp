@@ -2,30 +2,35 @@
   <div class="cart">
 
 	  <!-- 购物车列表 -->
-      <div class="foodsList" v-if="isListCart">
-		  <div class="fl-bg" v-show="isListCart" @click="openCart"></div>
-		  <div class="foods-box" v-show="isListCart">
-			  <div class="foods-header">
-				  <span class="cart-txt">购物车</span>
-				  <span class="clear-cart" @click="closeCart">清空</span>
-			  </div>
-			  <div class="lists" ref="listsBox">
-					<ul>
-						<li v-for="(item,index) in selectFoods" :key="index">
-							<span class="food-title">{{item.name}}</span>
-							<span class="food-price">
-								<span class="symbol">￥</span>{{item.price}}
-							</span>
-							<span class="food-control">
-								<cartControl :food="item"></cartControl>
-							</span>
-						</li>
-					</ul>
-			  </div>
-			  
-		  </div>
+	  
+	
+      <div class="foodsList">
+		  <transition name="bg">
+		 	 <div class="fl-bg" v-show="isListCart"  @click="openCart"></div>
+		  </transition>
+		  <transition name="listFade">
+			<div class="foods-box" v-show="isListCart">
+				<div class="foods-header">
+					<span class="cart-txt">购物车</span>
+					<span class="clear-cart" @click="closeCart">清空</span>
+				</div>
+				<div class="lists" ref="listsBox">
+						<ul>
+							<li v-for="(item,index) in selectFoods" :key="index">
+								<span class="food-title">{{item.name}}</span>
+								<span class="food-price">
+									<span class="symbol">￥</span>{{item.price}}
+								</span>
+								<span class="food-control">
+									<cartControl :food="item"></cartControl>
+								</span>
+							</li>
+						</ul>
+				</div>				
+			</div>
+		  </transition>
       </div>
-
+	
       <!-- 购物车图标 -->
       <div class="cart-icon" :class="{'cart-active':cartNum>0}" @click="openCart">
         <i class="icon-shopping_cart"></i>
@@ -72,8 +77,8 @@ export default {
   },
   data() {
     return {
-			isPay: false, //是否达到支付条件
-			isListCart: false, //是否显示购物车列表
+      isPay: false, //是否达到支付条件
+      isShowCart: false //判断列表是否显示的条件
     };
   },
   computed: {
@@ -112,37 +117,48 @@ export default {
         this.isPay = false;
       }
       return message;
+    },
+    isListCart() {
+      //显示隐藏购物车列表
+	  let isShow;
+      if (this.isShowCart && this.cartNum) {
+        isShow = true;
+        this.$nextTick(() => {
+          //一些需要在页面数据变化完成后才执行的函数需要写在$nextTick中
+          if (!this.listScroll) {
+            this.listScroll = new BScroll(this.$refs.listsBox, {
+              click: true
+            });
+          } else {
+            this.listScroll.refresh(); //重新计算 better-scroll，当 DOM 结构发生变化的时候务必要调用确保滚动的效果正常
+          }
+        });
+      } else {
+		isShow=this.isShowCart=false;
+      }
+      return isShow;
     }
   },
-  created() {
-		
-	},
+  created() {},
   components: {
     cartControl: cartControl
   },
   mounted() {},
   methods: {
-		openCart(enevt){ //如果购物车中有商品打开购物车列表
-			if(this.totalPrice>0){
-				if(!this.isListCart){
-						this.isListCart=true;
-				}else{
-					this.isListCart=false;
-				}
-				this.$nextTick(()=>{ //一些需要在页面数据变化完成后才执行的函数需要写在$nextTick中
-					this.listScroll=new BScroll(this.$refs.listsBox, {
-							click: true
-					});
-				})
-			}
-		},
-		closeCart(enevt){ //清空购物车
-			this.selectFoods.forEach((food)=>{
-				food.count=0;
-			});
-			this.isListCart=false;
-		}
-	}
+    openCart(enevt) {
+      //如果购物车中有商品打开购物车列表
+      if (this.cartNum) {
+        this.isShowCart = !this.isShowCart;
+      }
+    },
+    closeCart(enevt) {
+      //清空购物车
+      this.selectFoods.forEach(food => {
+        food.count = 0;
+	  });
+	  this.isShowCart=false;
+    }
+  }
 };
 </script>
 
@@ -233,15 +249,15 @@ export default {
 			background-color rgb(0, 160, 260)
 			color #fff
 .foodsList
-	position fixed
+	position relative
 	width 100%
 	height 100%
 	top 0px
-	left 0px
+	left 0
 	.fl-bg
 		width 100%
 		height 100%
-		position absolute
+		position fixed
 		top 0
 		left 0
 		z-index -1
@@ -323,4 +339,20 @@ export default {
 					.food-control
 						// width 25%
 						float right
+.bg-enter
+	opacity 0
+.bg-enter-active, .bg-leave-active
+	transition all 0.5s
+.bg-leave
+	opacity 1
+.bg-leave-active
+	opacity 0
+.listFade-enter
+	transform translateY(305px)
+.listFade-enter-active, .listFade-leave-active
+	transition all 0.5s
+.listFade-leave
+	transform translateY(0px)
+.listFade-leave-active
+	transform translateY(305px)
 </style>
