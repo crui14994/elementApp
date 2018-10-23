@@ -8,6 +8,19 @@
 		  <transition name="bg">
 		 	 <div class="fl-bg" v-show="isListCart"  @click="openCart"></div>
 		  </transition>
+
+		  <!-- 购物车小球 -->
+		  <div class="ball-container">
+			<div v-for="(ball,index) in balls" :key="index">
+				<transition name="dropdown" @before-enter="beforeEnter" @enter="enter" @after-enter="afterEnter">
+					<div class="ball" v-show="ball.show">
+						<div class="inner inner-hook icon-add_circle"></div>
+					</div>
+				</transition>	
+			</div>
+		  </div>
+
+		  <!-- 购物车列表 -->
 		  <transition name="listFade">
 			<div class="foods-box" v-show="isListCart">
 				<div class="foods-header">
@@ -22,7 +35,7 @@
 									<span class="symbol">￥</span>{{item.price}}
 								</span>
 								<span class="food-control">
-									<cartControl :food="item"></cartControl>
+									<cartControl :food="item" @postEl="getEl"></cartControl>
 								</span>
 							</li>
 						</ul>
@@ -78,7 +91,16 @@ export default {
   data() {
     return {
       isPay: false, //是否达到支付条件
-      isShowCart: false //判断列表是否显示的条件
+      isShowCart: false, //判断列表是否显示的条件
+      balls: [
+        //购物车小球5个
+        { show: false },
+        { show: false },
+        { show: false },
+        { show: false },
+        { show: false }
+      ],
+      dropBalls: [] //已经在下降的小球存在这里
     };
   },
   computed: {
@@ -120,7 +142,7 @@ export default {
     },
     isListCart() {
       //显示隐藏购物车列表
-	  let isShow;
+      let isShow;
       if (this.isShowCart && this.cartNum) {
         isShow = true;
         this.$nextTick(() => {
@@ -134,7 +156,7 @@ export default {
           }
         });
       } else {
-		isShow=this.isShowCart=false;
+        isShow = this.isShowCart = false;
       }
       return isShow;
     }
@@ -155,8 +177,68 @@ export default {
       //清空购物车
       this.selectFoods.forEach(food => {
         food.count = 0;
-	  });
-	  this.isShowCart=false;
+      });
+      this.isShowCart = false;
+    },
+    drop(el) {
+      for (let i = 0; i < this.balls.length; i++) {
+        let ball = this.balls[i];
+        if (!ball.show) {
+          ball.show = true;
+          ball.el = el;
+          this.dropBalls.push(ball);
+          return;
+        }
+      }
+    },
+
+    /*获得当前点击的元素dom*/
+    getEl(el) {
+      // 体验优化,异步执行下落动画
+      this.$nextTick(() => {
+        this.drop(el);
+      });
+	},
+	
+    beforeEnter(el) {
+      let count = this.balls.length;
+      while (count--) {
+        let ball = this.balls[count];
+        if (ball.show) {
+          let rect = ball.el.getBoundingClientRect(); //获取元素的位置
+          let x = rect.left - 32; //小球掉落X轴起点
+          let y = -(window.innerHeight - rect.top - 22); //小球掉落Y轴起点,向下为负
+          el.style.display = "";
+          el.style.webkitTransform = `translate3d(0, ${y}px,0)`; /* Safari 和 Chrome */
+          el.style.transform = `translate3d(0, ${y}px,0)`; //旋转div元素
+          // 处理内层动画
+          let inner = el.getElementsByClassName("inner-hook")[0];
+          inner.style.webkitTransform = `translate3d(${x}px, 0, 0)`;
+          inner.style.transform = `translate3d(${x}px,0,0)`;
+        }
+      }
+    },
+    enter(el, done) {
+      //关闭ESlint语法监测，因为ES6语言规范会让被申明却未被调用的变量报错
+      /* eslint-disable no-unused-vars */
+      let rf = el.offestHeight; //申明rf是为了触发浏览器的重排
+      this.$nextTick(() => {
+        //修改数据之后立即使用这个方法，获取更新后的 DOM。
+        el.style.webkitTransform =
+          "translate3d(0, 0, 0)"; /* Safari 和 Chrome */
+        el.style.transform = "translate3d(0, 0, 0)"; //旋转div元素
+        let inner = el.getElementsByClassName("inner-hook")[0];
+        inner.style.webkitTransform = "translate3d(0, 0, 0)";
+        inner.style.transform = "translate3d(0, 0, 0)";
+        el.addEventListener("transitionend", done); //Vue为了知道过渡的完成，否则无法进入到afterEnter中
+      });
+    },
+    afterEnter(el) {
+      let ball = this.dropBalls.shift(); //把数组的第一个元素从其中删除，并返回第一个元素的值。
+      if (ball) {
+        ball.show = false;
+        el.style.display = "none"; //隐藏小球
+      }
     }
   }
 };
@@ -355,4 +437,17 @@ export default {
 	transform translateY(0px)
 .listFade-leave-active
 	transform translateY(305px)
+.ball
+	position fixed
+	left 32px
+	bottom 22px
+	transition all 0.4s cubic-bezier(0.49, -0.29, 0.75, 0.41)
+	z-index 100
+	.inner
+		width 16px
+		height 16px
+		border-radius 50%
+		background #fff
+		color #00a0dc
+		transition all 0.4s linear
 </style>

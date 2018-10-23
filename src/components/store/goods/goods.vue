@@ -37,7 +37,7 @@
                         </div>
                         <!-- 购买数量 -->
                         <div class="cart-control">
-                            <cartControl :food="bocItem"></cartControl>
+                            <cartControl :food="bocItem" @postEl="getEl"></cartControl>
                         </div>
                     </li>
                 </ul>
@@ -47,7 +47,7 @@
       
       <!-- 购物车 -->
       <div class="cart-box">
-        <cart  :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice" :select-foods="selectFoods"></cart>
+        <cart ref="cartBox"  :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice" :select-foods="selectFoods"></cart>
       </div>
   </div>
 </template>
@@ -72,7 +72,7 @@ export default {
       iconArr: ["special", "decrease", "discount", "guarantee", "invoice"], //左侧优惠信息所对应的class
       coordinates: [], //保存右侧每个菜单的相对于父元素坐标的数组
       offsettY: 0, //右侧当前滑动的坐标
-      selectFood:[] //购物车中商品的数组
+      selectFood:[], //购物车中商品的数组
     };
   },
   components: {
@@ -162,6 +162,14 @@ export default {
         this.coordinates.push(foodsArr[i].offsetTop);
       }
       this.offsettY = this.coordinates[1]; //设置右侧滑动的坐标（让左侧菜单第二项为默认选中状态）
+    },
+
+    /*获得当前点击的元素dom*/
+    getEl(el){  
+        // 体验优化,异步执行下落动画
+        this.$nextTick(()=>{
+            this.$refs.cartBox.drop(el);
+        })  
     }
   }
 };
