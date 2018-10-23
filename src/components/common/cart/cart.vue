@@ -221,7 +221,7 @@ export default {
     enter(el, done) {
       //关闭ESlint语法监测，因为ES6语言规范会让被申明却未被调用的变量报错
       /* eslint-disable no-unused-vars */
-      let rf = el.offestHeight; //申明rf是为了触发浏览器的重排
+      let rf = el.offsetHeight; //申明rf是为了触发浏览器的重排
       this.$nextTick(() => {
         //修改数据之后立即使用这个方法，获取更新后的 DOM。
         el.style.webkitTransform =
