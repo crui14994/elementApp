@@ -194,7 +194,7 @@ export default {
 
     /*获得当前点击的元素dom*/
     getEl(el) {
-      // 体验优化,异步执行下落动画
+      //体验优化,异步执行下落动画
       this.$nextTick(() => {
         this.drop(el);
       });
@@ -211,7 +211,7 @@ export default {
           el.style.display = "";
           el.style.webkitTransform = `translate3d(0, ${y}px,0)`; /* Safari 和 Chrome */
           el.style.transform = `translate3d(0, ${y}px,0)`; //旋转div元素
-          // 处理内层动画
+          //处理内层动画
           let inner = el.getElementsByClassName("inner-hook")[0];
           inner.style.webkitTransform = `translate3d(${x}px, 0, 0)`;
           inner.style.transform = `translate3d(${x}px,0,0)`;
@@ -224,8 +224,7 @@ export default {
       let rf = el.offsetHeight; //申明rf是为了触发浏览器的重排
       this.$nextTick(() => {
         //修改数据之后立即使用这个方法，获取更新后的 DOM。
-        el.style.webkitTransform =
-          "translate3d(0, 0, 0)"; /* Safari 和 Chrome */
+        el.style.webkitTransform = "translate3d(0, 0, 0)"; /* Safari 和 Chrome */
         el.style.transform = "translate3d(0, 0, 0)"; //旋转div元素
         let inner = el.getElementsByClassName("inner-hook")[0];
         inner.style.webkitTransform = "translate3d(0, 0, 0)";

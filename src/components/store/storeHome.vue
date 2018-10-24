@@ -5,23 +5,23 @@
     <!--导航-->
     <div class="store-nav">
     	<div class="store-item" :class="{'nav-active':navActive==='goods'}" 
-        @click="toogleMessage('goods')">
+        @click.stop.prevent="toogleMessage('goods',0)">
         <router-link to="/goods">商品</router-link>
       </div>
 
     	<div class="store-item" :class="{'nav-active':navActive==='evaluation'}" 
-        @click="toogleMessage('evaluation')">
+        @click.stop.prevent="toogleMessage('evaluation',1)">
         <router-link to="/evaluation">评价</router-link>
       </div>
 
     	<div class="store-item" :class="{'nav-active':navActive==='merchants'}" 
-        @click="toogleMessage('merchants')">
+        @click.stop.prevent="toogleMessage('merchants',2)">
         <router-link to="/merchants">商家</router-link>
       </div>
     </div>
     <!--内容-->
     <div class="content">
-      <transition name="fade-nav">
+      <transition :name="toggleName">
         <keep-alive>
 			      <router-view :seller="seller"></router-view>
 			  </keep-alive>
@@ -41,6 +41,8 @@ export default {
     return {
       seller: {}, //商品信息
       navActive:"goods", //当前选中商品，评价，商家的状态
+      lastN:0, //点击切换nav前状态的编号
+      nowN:0,  //nav当前状态的编号
     };
   },
   created() {
@@ -59,11 +61,24 @@ export default {
   components: {
     storeHeader: header
   },
+  computed:{
+    toggleName(){  //如果点击的是左边的菜单返回 “fade2-nav”让动画向右移动
+      let l=this.lastN;
+      let n=this.nowN;
+      if(n<l){
+        return "fade2-nav";
+      }else{
+        return "fade-nav";
+      }
+    }
+  },
   mounted() {
     
   },
   methods:{
-   toogleMessage:function(str){
+   toogleMessage:function(str,n){
+    this.lastN=this.nowN;
+    this.nowN=n;
     this.navActive=str;
    }
   }
@@ -95,17 +110,38 @@ export default {
   width 33.3%
   line-height 40px
   text-align center
+  a
+    display: block
+    width: 100%
+    height: 100%
   &.nav-active
-    color #E95C59
+    a
+      color #E95C59
+
 .fade-nav-enter 
-  opacity:0
+  transform: translateX(400px)
+  opacity: 0
 .fade-nav-leave
-  opacity:1
-.fade-nav-enter-active
+  transform: translateX(0px)
+  opacity: 1
+.fade-nav-enter-active,.fade-nav-leave-active
   transition:all .5s
 .fade-nav-leave-active
   opacity:0
+  transform translateX(-400px)
+
+.fade2-nav-enter 
+  transform: translateX(-400px)
+  opacity: 0
+.fade2-nav-leave
+  transform: translateX(0px)
+  opacity: 1
+.fade2-nav-enter-active,.fade2-nav-leave-active
   transition:all .5s
+.fade2-nav-leave-active
+  opacity:0
+  transform translateX(400px)
+
 .content
   width 100%
   height 100%
