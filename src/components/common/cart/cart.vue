@@ -59,13 +59,13 @@
       <!-- 购物车数量 -->
       <span v-show="cartNum>0" class="icon-num">{{cartNum}}</span>
 
-      
   </div>
 </template>
 
 <script>
 import cartControl from "../cartcontrol/cartcontrol";
 import BScroll from "better-scroll";
+
 
 export default {
   name: "cart",
@@ -163,7 +163,7 @@ export default {
   },
   created() {},
   components: {
-    cartControl: cartControl
+		cartControl: cartControl,
   },
   mounted() {},
   methods: {

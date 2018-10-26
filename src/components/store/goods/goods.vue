@@ -19,7 +19,7 @@
             <li class="box-item box-item-hook"  v-for="(item,index) in goods" :key="index">
                 <div class="box-title">{{item.name}}</div>
                 <ul class="box-content">
-                    <li v-for="(bocItem,index) in item.foods" :key="index">
+                    <li v-for="(bocItem,index) in item.foods" :key="index" @click="foodClick(bocItem,$event)">
                         <div class="good-icon">
                             <img :src="bocItem.icon" alt="" width="57px" height="57px">
                         </div>
@@ -49,6 +49,11 @@
       <div class="cart-box">
         <cart ref="cartBox"  :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice" :select-foods="selectFoods"></cart>
       </div>
+
+      <!-- 商品详情 -->
+      
+      <food :food="selectedFood" ref="food"></food>
+     
   </div>
 </template>
 
@@ -56,15 +61,16 @@
 import cartControl from "../../common/cartcontrol/cartcontrol";
 import BScroll from "better-scroll";
 import cart from "../../common/cart/cart";
+import food from "../food/food";
 
 const ERR_OK = 0;
 
 export default {
   name: "goods",
-  props:{
-      seller:{
-          type:Object
-      }
+  props: {
+    seller: {
+      type: Object
+    }
   },
   data() {
     return {
@@ -72,12 +78,14 @@ export default {
       iconArr: ["special", "decrease", "discount", "guarantee", "invoice"], //左侧优惠信息所对应的class
       coordinates: [], //保存右侧每个菜单的相对于父元素坐标的数组
       offsettY: 0, //右侧当前滑动的坐标
-      selectFood:[], //购物车中商品的数组
+      selectFood: [], //购物车中商品的数组
+      selectedFood:{},//当前选中的商品
     };
   },
   components: {
     cartControl: cartControl,
-    cart:cart
+    cart: cart,
+    food: food
   },
   computed: {
     /**左侧当前选中菜单的下标 */
@@ -91,16 +99,17 @@ export default {
       }
       return 0;
     },
-    selectFoods(){  //当商品数量为true时将当前商品添加到需要存入购物车商品数组中
-        let foods=[];
-        this.goods.forEach((good)=>{
-            good.foods.forEach((food)=>{
-                if(food.count){
-                    foods.push(food);
-                } 
-            })  
+    selectFoods() {
+      //当商品数量为true时将当前商品添加到需要存入购物车商品数组中
+      let foods = [];
+      this.goods.forEach(good => {
+        good.foods.forEach(food => {
+          if (food.count) {
+            foods.push(food);
+          }
         });
-        return foods;     
+      });
+      return foods;
     }
   },
   created() {
@@ -120,9 +129,7 @@ export default {
       }
     );
   },
-  mounted() {
-
-  },
+  mounted() {},
   methods: {
     /*左侧菜单选项*/
     selectMenu(i, event) {
@@ -165,11 +172,20 @@ export default {
     },
 
     /*获得当前点击的元素dom*/
-    getEl(el){  
-        // 体验优化,异步执行下落动画
-        this.$nextTick(()=>{
-            this.$refs.cartBox.drop(el);
-        })  
+    getEl(el) {
+      // 体验优化,异步执行下落动画
+      this.$nextTick(() => {
+        this.$refs.cartBox.drop(el);
+      });
+    },
+
+    /*点击商品显示或隐藏商品详情*/
+    foodClick(item,event) {
+      if (!event._constructed) {
+        return;
+      }
+      this.selectedFood=item;
+      this.$refs.food.show();
     }
   }
 };
@@ -329,10 +345,11 @@ export default {
                 li:first-child:after
                     display none
 .cart-box
-  width 100%
-  height 58px
-  position fixed
-  bottom 0
-  left 0
-  z-index 100
+    width 100%
+    height 58px
+    position fixed
+    bottom 0
+    left 0
+    z-index 170
+
 </style>
