@@ -1,8 +1,10 @@
 <template>
 
-	  <transition name="bg">
-  <div class="food" v-show="foodShow" ref="foodScroll" @click="show">
+	<transition name="bg">
+  <div class="food" v-show="foodShow" ref="foodScroll" >
+	
 		<div class="food-content">
+				<span class="arrow_lift" @click="show"><i class="icon-arrow_lift"></i></span>
 				<div class="food-img">
 					<img :src="food.image" width="100%"  alt="">
 				</div>
@@ -13,10 +15,11 @@
 					<p class="food-price">
 						<span class="now-price"><span class="symobe">￥</span>{{food.price}}</span>
 						<span class="old-price" v-if="food.oldPrice"><span class="symobe">￥</span>{{food.oldPrice}}</span>
-						<span class="add-cart" @click.stop.prevent="addCart">加入购物车</span>
+						<span class="add-cart" v-show="!addBtn" @click.stop.prevent="addCart">加入购物车</span>
+						<span class="add-num" v-show="addBtn">
+								<cartControl :food="food"></cartControl>
+						</span>
 					</p>
-
-					
 				</div>
 				<!-- 分割线 -->
 				<div class="split">
@@ -37,9 +40,9 @@
 				<div class="food-evaluation">
 					<p class="food-evaluation-tit">商品评价</p>
 					<ul class="food-e-nav">
-						<li @click.stop.prevent="filterType()">全部<span class="nav-num" >54</span></li>
-						<li @click.stop.prevent="filterType(0)" class="recommended">推荐<span class="nav-num" >54</span></li>
-						<li @click.stop.prevent="filterType(1)" class="teasing">吐槽<span class="nav-num">54</span></li>
+						<li @click.stop.prevent="filterType()" :class="{'nav-active':ratingsType==undefined}">全部<span class="nav-num" >54</span></li>
+						<li @click.stop.prevent="filterType(0)" :class="{'nav-active':ratingsType==0}">推荐<span class="nav-num" >54</span></li>
+						<li @click.stop.prevent="filterType(1)" class="teasing" :class="{'nav-active':ratingsType==1}">吐槽<span class="nav-num">54</span></li>
 					</ul>
 					<div class="line"></div>
 					<p class="food-e-filter">
@@ -74,8 +77,10 @@
 </template>
 
 <script>
+import cartControl from "../../common/cartcontrol/cartcontrol";
 import BScroll from "better-scroll";
 import Vue from "vue";
+
 
 export default {
   name: "food",
@@ -88,10 +93,12 @@ export default {
     return {
       foodShow: false, //商品详情是否显示
       empty: false, //是否只看有内容的评价
-      ratingsType: 0 //推荐为0，吐槽为1
+      ratingsType: undefined //推荐为0，吐槽为1,100为全部
     };
   },
-  components: {},
+  components: {
+		cartControl: cartControl,
+	},
   created() {
     this._initScroll();
     Date.prototype.Format = function(fmt) {
@@ -148,7 +155,15 @@ export default {
       } else {
         return this.food.ratings;
       }
-    }
+		},
+		/*点击加入购物车隐藏购物车按钮*/
+		addBtn(){
+			if(this.food.count>=1){
+				return true;
+			}else{
+				return false;
+			}
+		}
   },
   methods: {
     /*初始化滚动条*/
@@ -157,6 +172,9 @@ export default {
         if (!this.scroll) {
           this.scroll = new BScroll(this.$refs.foodScroll, {
 						click: true,
+						startY:300,
+						bounce:true,
+						probeType:3
 					});
 					
         } else {
@@ -166,8 +184,8 @@ export default {
       });
     },
     show() {
-      !this.foodShow ? (this.foodShow = true) : (this.foodShow = false);
-      this._initScroll();
+			!this.foodShow ? (this.foodShow = true) : (this.foodShow = false);
+			this._initScroll();      
     },
     /*加入购物车*/
     addCart(event) {
@@ -188,7 +206,8 @@ export default {
     /**类型过滤 */
     filterType(n) {
       this.ratingsType = n;
-    }
+		},
+		
   }
 };
 </script>
@@ -196,6 +215,14 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="stylus">
 @import '../../../common/stylus/icon'
+
+.arrow_lift
+			position absolute
+			top 5px
+			left 5px
+			font-size 18px
+			padding 5px
+			color #fff
 .food
 	width 100%
 	height 100%
@@ -245,6 +272,12 @@ export default {
 		color #fff
 		font-size 10px
 		padding 5px 10px
+	.add-num
+		position absolute
+		right 0
+		bottom 0
+		width 74px
+		height 24px
 	.old-price
 		color rgb(147, 153, 159)
 		font-size 10px
@@ -299,15 +332,14 @@ export default {
 			float left
 			display inline-block
 			padding 8px 12px
-			background rgb(0, 160, 220)
+			// background rgb(0, 160, 220)
+			background rgba(0, 160, 220, 0.2)
 			margin-left 8px
-			color rgb(255, 255, 255)
+			// color rgb(255, 255, 255)
+			color rgb(77, 85, 93)
 			font-size 12px
 			line-height 18px
 			border-radius 6px
-			&.recommended
-				background rgba(0, 160, 220, 0.2)
-				color rgb(77, 85, 93)
 			&.teasing
 				background rgba(77, 85, 93, 0.2)
 				color rgb(77, 85, 93)
@@ -315,6 +347,9 @@ export default {
 				font-size 8px
 				margin-left 4px
 				vertical-align text-top
+			&.nav-active
+				background rgb(0, 160, 220)
+				color rgb(255, 255, 255)
 	.food-e-filter
 		box-sizing border-box
 		padding 12px 0 0

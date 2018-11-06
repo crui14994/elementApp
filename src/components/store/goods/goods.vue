@@ -56,7 +56,7 @@
      
   </div>
 </template>
-
+o
 <script>
 import cartControl from "../../common/cartcontrol/cartcontrol";
 import BScroll from "better-scroll";
