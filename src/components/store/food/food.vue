@@ -4,7 +4,7 @@
   <div class="food" v-show="foodShow" ref="foodScroll" >
 	
 		<div class="food-content">
-				<span class="arrow_lift" @click="show"><i class="icon-arrow_lift"></i></span>
+				<span class="arrow_lift" @click="show($event)"><i class="icon-arrow_lift"></i></span>
 				<div class="food-img">
 					<img :src="food.image" width="100%"  alt="">
 				</div>
@@ -40,9 +40,9 @@
 				<div class="food-evaluation">
 					<p class="food-evaluation-tit">商品评价</p>
 					<ul class="food-e-nav">
-						<li @click.stop.prevent="filterType()" :class="{'nav-active':ratingsType==undefined}">全部<span class="nav-num" >54</span></li>
-						<li @click.stop.prevent="filterType(0)" :class="{'nav-active':ratingsType==0}">推荐<span class="nav-num" >54</span></li>
-						<li @click.stop.prevent="filterType(1)" class="teasing" :class="{'nav-active':ratingsType==1}">吐槽<span class="nav-num">54</span></li>
+						<li @click.stop.prevent="filterType(undefined,$event)" :class="{'nav-active':ratingsType==undefined}">全部<span class="nav-num" >{{teasingNum+recommendNum}}</span></li>
+						<li @click.stop.prevent="filterType(0,$event)" :class="{'nav-active':ratingsType==0}">推荐<span class="nav-num" >{{recommendNum}}</span></li>
+						<li @click.stop.prevent="filterType(1,$event)" class="teasing" :class="{'nav-active':ratingsType==1}">吐槽<span class="nav-num">{{teasingNum}}</span></li>
 					</ul>
 					<div class="line"></div>
 					<p class="food-e-filter">
@@ -54,7 +54,8 @@
 				<div class="line"></div>
 				<!-- 评价列表 -->
 				<div class="food-e-list">
-					<ul class=" ">
+					<span v-if="foodShow && ratings.length===0" class="no-txt">暂无评价</span>
+					<ul class=" " v-if="ratings">
 						<li v-for="(item,index) in ratings" :key="index"  v-if="item.text||!empty">
 							<div class="user-message">
 								<div class="data">{{item.rateTime}}</div>
@@ -63,7 +64,8 @@
 								</div>
 							</div>
 							<p class="food-e-message">
-								<span class="icon icon-thumb_up"></span>
+								<span v-if="item.rateType===0" class="icon icon-thumb_up"></span>
+								<span v-if="item.rateType===1" class="icon icon-thumb_down"></span>
 								<span>{{item.text}}</span>
 							</p>
 							<div class="line"></div>
@@ -80,7 +82,7 @@
 import cartControl from "../../common/cartcontrol/cartcontrol";
 import BScroll from "better-scroll";
 import Vue from "vue";
-
+import {formatDate} from "../../../common/js/date.js";
 
 export default {
   name: "food",
@@ -93,7 +95,7 @@ export default {
     return {
       foodShow: false, //商品详情是否显示
       empty: false, //是否只看有内容的评价
-      ratingsType: undefined //推荐为0，吐槽为1,100为全部
+			ratingsType: undefined, //推荐为0，吐槽为1,100为全部
     };
   },
   components: {
@@ -101,31 +103,6 @@ export default {
 	},
   created() {
     this._initScroll();
-    Date.prototype.Format = function(fmt) {
-      var o = {
-        "M+": this.getMonth() + 1, //月份
-        "d+": this.getDate(), //日
-        "h+": this.getHours(), //小时
-        "m+": this.getMinutes(), //分
-        "s+": this.getSeconds(), //秒
-        "q+": Math.floor((this.getMonth() + 3) / 3), //季度
-        S: this.getMilliseconds() //毫秒
-      };
-      if (/(y+)/.test(fmt))
-        fmt = fmt.replace(
-          RegExp.$1,
-          (this.getFullYear() + "").substr(4 - RegExp.$1.length)
-        );
-      for (var k in o)
-        if (new RegExp("(" + k + ")").test(fmt))
-          fmt = fmt.replace(
-            RegExp.$1,
-            RegExp.$1.length == 1
-              ? o[k]
-              : ("00" + o[k]).substr(("" + o[k]).length)
-          );
-      return fmt;
-		};
   },
   mounted() {},
   computed: {
@@ -141,7 +118,8 @@ export default {
 			let foodRatings = [];
 			if(this.food.ratings){
 					this.food.ratings.forEach((item)=>{
-							let time=new Date(item.rateTime).Format("yyyy-MM-dd hh:mm:ss");
+							// let time=new Date(item.rateTime).Format("yyyy-MM-dd hh:mm:ss");
+							let time=formatDate(new Date(item.rateTime),"yyyy-MM-dd hh:mm:ss");
 							item.rateTime=time;
 					})
 			}
@@ -163,6 +141,14 @@ export default {
 			}else{
 				return false;
 			}
+		},
+		//推荐评价数量
+		recommendNum(){
+			return this.getNum(0);
+		},
+		//吐槽评价数量
+		teasingNum(){
+			return this.getNum(1);
 		}
   },
   methods: {
@@ -184,6 +170,9 @@ export default {
       });
     },
     show() {
+			if (!event._constructed) {
+        return;
+      }
 			!this.foodShow ? (this.foodShow = true) : (this.foodShow = false);
 			this._initScroll();      
     },
@@ -201,12 +190,33 @@ export default {
     },
     /**是否只看有内容的评价 */
     filter() {
-      !this.empty ? (this.empty = true) : (this.empty = false);
+			!this.empty ? (this.empty = true) : (this.empty = false);
+			this.$nextTick(()=>{
+				this.scroll.refresh();
+			})
     },
     /**类型过滤 */
-    filterType(n) {
-      this.ratingsType = n;
+    filterType(n,event) {
+			if (!event._constructed) {
+        return;
+      }
+			this.ratingsType = n;
+			this.$nextTick(()=>{
+				this.scroll.refresh();
+			})
 		},
+		/*计算数量 */
+		getNum(n){
+			let recommendArr=[];
+			if(this.food.ratings){
+				this.food.ratings.forEach(element => {
+          if (element.rateType === n) {
+            recommendArr.push(element);
+          }
+        });
+			}
+			return recommendArr.length;
+		}
 		
   }
 };
@@ -217,12 +227,14 @@ export default {
 @import '../../../common/stylus/icon'
 
 .arrow_lift
-			position absolute
-			top 5px
-			left 5px
-			font-size 18px
-			padding 5px
-			color #fff
+	position absolute
+	top 5px
+	left 5px
+	font-size 18px
+	padding 5px
+	color #fff
+	i 
+		text-shadow: 1px 1px 1px #898989
 .food
 	width 100%
 	height 100%
@@ -365,6 +377,8 @@ export default {
 	box-sizing border-box
 	padding 18px
 	padding-bottom 60px
+	.no-txt
+		font-size 12px
 	.user-message
 		width 100%
 		font-size 10px
@@ -413,4 +427,6 @@ export default {
 	transform translateX(0px)
 .bg-leave-active
 	transform translateX(400px)
+.icon-thumb_up
+	color rgb(0,160,220)!important
 </style>
