@@ -3,7 +3,7 @@
       <!-- 左侧导航 -->
       <div class="box-left" ref="boxLeft">
         <ul class="left-menu">
-            <li v-for="(item,index) in goods" :class="{'active':newIndex==index}" 
+            <li v-for="(item,index) in goods" :class="{'active':nowIndex==index}" 
             :key="index" @click="selectMenu(index,$event)">
                 <div class="menu-txt">   
                     <span v-show="item.type>0" class="icon" :class="iconArr[item.type]"></span>
@@ -15,7 +15,7 @@
       </div>
       <!-- 右侧内容 -->
       <div class="box-right" ref="boxRight">
-        <ul>
+        <ul class="box-ul">
             <li class="box-item box-item-hook"  v-for="(item,index) in goods" :key="index">
                 <div class="box-title">{{item.name}}</div>
                 <ul class="box-content">
@@ -80,6 +80,7 @@ export default {
       offsettY: 0, //右侧当前滑动的坐标
       selectFood: [], //购物车中商品的数组
       selectedFood:{},//当前选中的商品
+      c:0
     };
   },
   components: {
@@ -89,15 +90,15 @@ export default {
   },
   computed: {
     /**左侧当前选中菜单的下标 */
-    newIndex() {
-      for (let i = 0; i < this.coordinates.length; i++) {
-        let h1 = this.coordinates[i];
-        let h2 = this.coordinates[i + 1];
-        if (!h2 || (this.offsettY >= h1 && this.offsettY < h2)) {
-          return i;
+    nowIndex() {
+        for (let i = 0; i < this.coordinates.length; i++) {
+          let height1 = this.coordinates[i];
+          let height2 = this.coordinates[i + 1];
+          if (!height2 || (this.offsettY >= height1 && this.offsettY < height2)) {
+            return i;
+          }
         }
-      }
-      return 0;
+        return 0;
     },
     selectFoods() {
       //当商品数量为true时将当前商品添加到需要存入购物车商品数组中
@@ -113,7 +114,7 @@ export default {
     }
   },
   created() {
-    this.$http.get("http://localhost:8080/api/goods").then(
+    this.$http.get("http://172.28.241.1:8080/api/goods").then(
       response => {
         response = response.body;
         if (response.errno == ERR_OK) {
@@ -128,6 +129,7 @@ export default {
         // error callback
       }
     );
+    
   },
   mounted() {},
   methods: {
@@ -136,12 +138,12 @@ export default {
       if (!event._constructed) {
         return;
       }
-
-      let foodList = this.$refs.boxRight.getElementsByClassName(
-        "box-item-hook"
-      );
+      let foodList = this.$refs.boxRight.getElementsByClassName('box-item-hook');
       let el = foodList[i];
-      this.rightScroll.scrollToElement(el, 300);
+      this.offsettY=this.coordinates[i];
+      this.$nextTick(()=>{
+        this.rightScroll.scrollToElement(el,300);
+      })
     },
     _initScroll() {
       /*初始化左侧菜单列表*/
@@ -168,7 +170,6 @@ export default {
       for (let i = 0; i < foodsArr.length; i++) {
         this.coordinates.push(foodsArr[i].offsetTop);
       }
-      this.offsettY = this.coordinates[1]; //设置右侧滑动的坐标（让左侧菜单第二项为默认选中状态）
     },
 
     /*获得当前点击的元素dom*/
@@ -351,5 +352,6 @@ export default {
     bottom 0
     left 0
     z-index 170
-
+.box-ul
+    position relative
 </style>
