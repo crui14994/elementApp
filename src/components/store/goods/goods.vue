@@ -14,8 +14,9 @@
         </ul>
       </div>
       <!-- 右侧内容 -->
-      <div class="box-right" ref="boxRight">
-        <ul class="box-ul">
+      <div class="box-right">
+          <div class="box-right-content"  ref="boxRight">
+<ul class="box-ul">
             <li class="box-item box-item-hook"  v-for="(item,index) in goods" :key="index">
                 <div class="box-title">{{item.name}}</div>
                 <ul class="box-content">
@@ -43,6 +44,8 @@
                 </ul>
             </li>
         </ul>
+          </div>
+        
       </div>
       
       <!-- 购物车 -->
@@ -56,7 +59,7 @@
      
   </div>
 </template>
-o
+
 <script>
 import cartControl from "../../common/cartcontrol/cartcontrol";
 import BScroll from "better-scroll";
@@ -142,7 +145,12 @@ export default {
       let el = foodList[i];
       this.offsettY=this.coordinates[i];
       this.$nextTick(()=>{
-        this.rightScroll.scrollToElement(el,300);
+        this.rightScroll.scrollToElement(el,200,0,0,{
+             style: 'linear',
+            fn: function (t) {
+                return 1 + (--t * t * t * t * t)
+            }
+        });
       })
     },
     _initScroll() {
@@ -195,6 +203,13 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="stylus">
 @import '../../../common/stylus/mixin'
+.cart-box
+    width 100%
+    height 58px
+    position fixed
+    bottom 0
+    left 0
+    z-index 300
 .goods
     height 100%
     overflow hidden
@@ -345,13 +360,11 @@ export default {
                     background-color rgba(7, 17, 27, 0.1)
                 li:first-child:after
                     display none
-.cart-box
-    width 100%
-    height 58px
-    position fixed
-    bottom 0
-    left 0
-    z-index 170
+
 .box-ul
     position relative
+.box-right-content
+    width 100%
+    height 100%
+    overflow hidden
 </style>

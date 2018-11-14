@@ -250,6 +250,7 @@ export default {
 	width 100%
 	height 100%
 	position relative
+	z-index 300
 	.icon-num
 		position absolute
 		top 0px

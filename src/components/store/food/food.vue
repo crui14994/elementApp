@@ -38,25 +38,18 @@
 
 				<!-- 商品评价 -->
 				<div class="food-evaluation">
-					<p class="food-evaluation-tit">商品评价</p>
-					<ul class="food-e-nav">
-						<li @click.stop.prevent="filterType(undefined,$event)" :class="{'nav-active':ratingsType==undefined}">全部<span class="nav-num" >{{teasingNum+recommendNum}}</span></li>
-						<li @click.stop.prevent="filterType(0,$event)" :class="{'nav-active':ratingsType==0}">推荐<span class="nav-num" >{{recommendNum}}</span></li>
-						<li @click.stop.prevent="filterType(1,$event)" class="teasing" :class="{'nav-active':ratingsType==1}">吐槽<span class="nav-num">{{teasingNum}}</span></li>
-					</ul>
-					<div class="line"></div>
-					<p class="food-e-filter">
-						<span class="icon icon-check_circle" :class="{'icon-active':empty}" @click.stop.prevent="filter"></span>
-						<span>只看有内容的评价</span>
-					</p>
-					
+					<label-box :txtArr='["全部","满意","不满意"]' :ratings="food.ratings"
+					@isFilter="setFilter" @ratingType="setType"></label-box>
 				</div>
+
+
 				<div class="line"></div>
+
 				<!-- 评价列表 -->
 				<div class="food-e-list">
-					<span v-if="foodShow && ratings.length===0" class="no-txt">暂无评价</span>
-					<ul class=" " v-if="ratings">
-						<li v-for="(item,index) in ratings" :key="index"  v-if="item.text||!empty">
+					<span v-if="foodShow && selectArr.length===0" class="no-txt">暂无评价</span>
+					<ul class=" " v-if="selectArr">
+						<li v-for="(item,index) in selectArr" :key="index"  v-show="filter?item.text:true">
 							<div class="user-message">
 								<div class="data">{{item.rateTime}}</div>
 								<div class="message">
@@ -81,6 +74,7 @@
 <script>
 import cartControl from "../../common/cartcontrol/cartcontrol";
 import BScroll from "better-scroll";
+import labelBox from "../../common/labelBox/labelBox";
 import Vue from "vue";
 import {formatDate} from "../../../common/js/date.js";
 
@@ -96,15 +90,25 @@ export default {
       foodShow: false, //商品详情是否显示
       empty: false, //是否只看有内容的评价
 			ratingsType: undefined, //推荐为0，吐槽为1,100为全部
+			filter:false,//是否显示没有内容的评价
+	  	type:2, //默认显示全部评价
     };
   },
   components: {
 		cartControl: cartControl,
+		labelBox:labelBox
 	},
   created() {
+		this.food.ratings.forEach(rating=>{
+			  rating.rateTime=formatDate(new Date(rating.rateTime),"yyyy-MM-dd hh:mm:ss");
+		})
     this._initScroll();
   },
-  mounted() {},
+  mounted() {
+		setTimeout(() => {
+     this._initScroll();
+    }, 20)
+	},
   computed: {
     description() {
       if (!this.food.description) {
@@ -112,28 +116,21 @@ export default {
       } else {
         return this.food.description;
       }
-    },
-    /**根据评价类型进行分类 */
-    ratings() {
-			let foodRatings = [];
-			if(this.food.ratings){
-					this.food.ratings.forEach((item)=>{
-							// let time=new Date(item.rateTime).Format("yyyy-MM-dd hh:mm:ss");
-							let time=formatDate(new Date(item.rateTime),"yyyy-MM-dd hh:mm:ss");
-							item.rateTime=time;
-					})
-			}
-      if (this.ratingsType != undefined && this.food.ratings) {
-        this.food.ratings.forEach(element => {
-          if (element.rateType === this.ratingsType) {
-            foodRatings.push(element);
-          }
-        });
-        return foodRatings;
-      } else {
-        return this.food.ratings;
-      }
 		},
+		selectArr(){
+		  let ratingArr=[];
+		  if(this.type==2){
+			  return this.food.ratings;
+		  }else{
+			this.food.ratings.forEach((rating)=>{
+				if(rating.rateType==this.type){
+					ratingArr.push(rating);
+				}
+			})
+			return ratingArr;
+		  }
+		  
+	  },
 		/*点击加入购物车隐藏购物车按钮*/
 		addBtn(){
 			if(this.food.count>=1){
@@ -142,14 +139,6 @@ export default {
 				return false;
 			}
 		},
-		//推荐评价数量
-		recommendNum(){
-			return this.getNum(0);
-		},
-		//吐槽评价数量
-		teasingNum(){
-			return this.getNum(1);
-		}
   },
   methods: {
     /*初始化滚动条*/
@@ -187,35 +176,13 @@ export default {
         this.food.count += 1;
       }
       this.$emit("postEl", event.target);
-    },
-    /**是否只看有内容的评价 */
-    filter() {
-			!this.empty ? (this.empty = true) : (this.empty = false);
-			this.$nextTick(()=>{
-				this.scroll.refresh();
-			})
-    },
-    /**类型过滤 */
-    filterType(n,event) {
-			if (!event._constructed) {
-        return;
-      }
-			this.ratingsType = n;
-			this.$nextTick(()=>{
-				this.scroll.refresh();
-			})
 		},
-		/*计算数量 */
-		getNum(n){
-			let recommendArr=[];
-			if(this.food.ratings){
-				this.food.ratings.forEach(element => {
-          if (element.rateType === n) {
-            recommendArr.push(element);
-          }
-        });
-			}
-			return recommendArr.length;
+		//将label组件传递的值赋给filter
+		setFilter(data){
+			this.filter=data;
+		},
+		setType(i){
+			this.type=i;
 		}
 		
   }
@@ -325,8 +292,7 @@ export default {
 		line-height 24px
 		color rgb(77, 85, 93)
 .food-evaluation
-	box-sizing border-box
-	padding 18px 18px 12px 18px
+	 padding-bottom 18px
 	.food-evaluation-tit
 		font-size 14px
 		color rgb(7, 17, 27)

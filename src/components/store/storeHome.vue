@@ -46,7 +46,7 @@ export default {
     };
   },
   created() {
-    this.$http.get("http://localhost:8080/api/seller").then(
+    this.$http.get("http://172.28.241.1:8080/api/seller").then(
       response => {
         response = response.body;
         if (response.errno == ERR_OK) {
