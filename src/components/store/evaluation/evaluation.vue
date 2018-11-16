@@ -104,7 +104,7 @@ export default {
     labelBox: labelBox
   },
   created() {
-    this.$http.get("http://172.28.241.1:8080/api/ratings").then(
+    this.$http.get("http://172.16.18.1:8080/api/ratings").then(
       response => {
         response = response.body;
         if (response.errno == ERR_OK) {

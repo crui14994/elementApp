@@ -50,7 +50,7 @@ export default {
   .star-box
     text-align center
     .star-48
-      padding 0 6px
+      padding 0 4px
       width 30px
       height 26px
       display inline-block
@@ -62,7 +62,7 @@ export default {
       &.half
         bg-image('star48_half') // 使用bg-image($url)函数 
     .star-36
-      padding 0 5px
+      padding 0 3px
       width 22px
       height 22px
       display inline-block
@@ -74,7 +74,7 @@ export default {
       &.half
         bg-image('star36_half') // 使用bg-image($url)函数 
     .star-24
-      padding 0 4px
+      padding 0 2px
       width 15px
       height 15px
       display inline-block

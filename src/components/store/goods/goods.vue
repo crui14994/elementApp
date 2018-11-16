@@ -117,7 +117,7 @@ export default {
     }
   },
   created() {
-    this.$http.get("http://172.28.241.1:8080/api/goods").then(
+    this.$http.get("http://172.16.18.1:8080/api/goods").then(
       response => {
         response = response.body;
         if (response.errno == ERR_OK) {

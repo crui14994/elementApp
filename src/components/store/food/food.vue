@@ -76,7 +76,7 @@ import cartControl from "../../common/cartcontrol/cartcontrol";
 import BScroll from "better-scroll";
 import labelBox from "../../common/labelBox/labelBox";
 import Vue from "vue";
-import {formatDate} from "../../../common/js/date.js";
+import { formatDate } from "../../../common/js/date.js";
 
 export default {
   name: "food",
@@ -89,26 +89,23 @@ export default {
     return {
       foodShow: false, //商品详情是否显示
       empty: false, //是否只看有内容的评价
-			ratingsType: undefined, //推荐为0，吐槽为1,100为全部
-			filter:false,//是否显示没有内容的评价
-	  	type:2, //默认显示全部评价
+      ratingsType: undefined, //推荐为0，吐槽为1,100为全部
+      filter: false, //是否显示没有内容的评价
+      type: 2 //默认显示全部评价
     };
   },
   components: {
-		cartControl: cartControl,
-		labelBox:labelBox
-	},
+    cartControl: cartControl,
+    labelBox: labelBox
+  },
   created() {
-		this.food.ratings.forEach(rating=>{
-			  rating.rateTime=formatDate(new Date(rating.rateTime),"yyyy-MM-dd hh:mm:ss");
-		})
-    this._initScroll();
+    // this._initScroll();
   },
   mounted() {
-		setTimeout(() => {
-     this._initScroll();
-    }, 20)
-	},
+    setTimeout(() => {
+      this._initScroll();
+    }, 20);
+  },
   computed: {
     description() {
       if (!this.food.description) {
@@ -116,54 +113,60 @@ export default {
       } else {
         return this.food.description;
       }
-		},
-		selectArr(){
-		  let ratingArr=[];
-		  if(this.type==2){
-			  return this.food.ratings;
-		  }else{
-			this.food.ratings.forEach((rating)=>{
-				if(rating.rateType==this.type){
-					ratingArr.push(rating);
-				}
-			})
-			return ratingArr;
-		  }
-		  
-	  },
-		/*点击加入购物车隐藏购物车按钮*/
-		addBtn(){
-			if(this.food.count>=1){
-				return true;
-			}else{
-				return false;
+    },
+    selectArr() {
+      let ratingArr = [];
+      if (this.type == 2) {
+        ratingArr = this.food.ratings;
+      } else {
+        this.food.ratings.forEach(rating => {
+          if (rating.rateType == this.type) {
+            ratingArr.push(rating);
+          }
+        });
 			}
-		},
+			if(ratingArr){
+				ratingArr.forEach(rating=>{
+						rating.rateTime=formatDate(new Date(rating.rateTime),"yyyy-MM-dd hh:mm:ss");
+				})
+			}
+      return ratingArr;
+    },
+    /*点击加入购物车隐藏购物车按钮*/
+    addBtn() {
+      if (this.food.count >= 1) {
+        return true;
+      } else {
+        return false;
+      }
+    }
   },
   methods: {
     /*初始化滚动条*/
     _initScroll() {
+      // this.food.ratings.forEach(rating=>{
+
+      // })
       this.$nextTick(() => {
         if (!this.scroll) {
           this.scroll = new BScroll(this.$refs.foodScroll, {
-						click: true,
-						startY:300,
-						bounce:true,
-						probeType:3
-					});
-					
+            click: true,
+            startY: 300,
+            bounce: true,
+            probeType: 3
+          });
         } else {
-					this.scroll.refresh(); //重新计算 better-scroll，当 DOM 结构发生变化的时候务必要调用确保滚动的效果正常
-					this.scroll.scrollTo(0,0,0.1);
+          this.scroll.refresh(); //重新计算 better-scroll，当 DOM 结构发生变化的时候务必要调用确保滚动的效果正常
+          this.scroll.scrollTo(0, 0, 0.1);
         }
       });
     },
     show() {
-			if (!event._constructed) {
+      if (!event._constructed) {
         return;
       }
-			!this.foodShow ? (this.foodShow = true) : (this.foodShow = false);
-			this._initScroll();      
+      !this.foodShow ? (this.foodShow = true) : (this.foodShow = false);
+      this._initScroll();
     },
     /*加入购物车*/
     addCart(event) {
@@ -176,15 +179,14 @@ export default {
         this.food.count += 1;
       }
       this.$emit("postEl", event.target);
-		},
-		//将label组件传递的值赋给filter
-		setFilter(data){
-			this.filter=data;
-		},
-		setType(i){
-			this.type=i;
-		}
-		
+    },
+    //将label组件传递的值赋给filter
+    setFilter(data) {
+      this.filter = data;
+    },
+    setType(i) {
+      this.type = i;
+    }
   }
 };
 </script>
@@ -192,7 +194,6 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="stylus">
 @import '../../../common/stylus/icon'
-
 .arrow_lift
 	position absolute
 	top 5px
@@ -200,8 +201,8 @@ export default {
 	font-size 18px
 	padding 5px
 	color #fff
-	i 
-		text-shadow: 1px 1px 1px #898989
+	i
+		text-shadow 1px 1px 1px #898989
 .food
 	width 100%
 	height 100%
@@ -292,53 +293,53 @@ export default {
 		line-height 24px
 		color rgb(77, 85, 93)
 .food-evaluation
-	 padding-bottom 18px
-	.food-evaluation-tit
-		font-size 14px
-		color rgb(7, 17, 27)
-		line-height 14px
-		font-weight 200
-	.food-e-nav
-		box-sizing border-box
-		padding 18px 0
-		margin-left -8px
-		&:after
-			content ''
-			display block
-			clear both
-		li
-			float left
-			display inline-block
-			padding 8px 12px
-			// background rgb(0, 160, 220)
-			background rgba(0, 160, 220, 0.2)
-			margin-left 8px
-			// color rgb(255, 255, 255)
-			color rgb(77, 85, 93)
-			font-size 12px
-			line-height 18px
-			border-radius 6px
-			&.teasing
-				background rgba(77, 85, 93, 0.2)
-				color rgb(77, 85, 93)
-			.nav-num
-				font-size 8px
-				margin-left 4px
-				vertical-align text-top
-			&.nav-active
-				background rgb(0, 160, 220)
-				color rgb(255, 255, 255)
-	.food-e-filter
-		box-sizing border-box
-		padding 12px 0 0
+	padding-bottom 18px
+.food-evaluation-tit
+	font-size 14px
+	color rgb(7, 17, 27)
+	line-height 14px
+	font-weight 200
+.food-e-nav
+	box-sizing border-box
+	padding 18px 0
+	margin-left -8px
+	&:after
+		content ''
+		display block
+		clear both
+	li
+		float left
+		display inline-block
+		padding 8px 12px
+		// background rgb(0, 160, 220)
+		background rgba(0, 160, 220, 0.2)
+		margin-left 8px
+		// color rgb(255, 255, 255)
+		color rgb(77, 85, 93)
 		font-size 12px
+		line-height 18px
+		border-radius 6px
+		&.teasing
+			background rgba(77, 85, 93, 0.2)
+			color rgb(77, 85, 93)
+		.nav-num
+			font-size 8px
+			margin-left 4px
+			vertical-align text-top
+		&.nav-active
+			background rgb(0, 160, 220)
+			color rgb(255, 255, 255)
+.food-e-filter
+	box-sizing border-box
+	padding 12px 0 0
+	font-size 12px
+	line-height 24px
+	color rgb(147, 153, 159)
+	.icon
+		font-size 24px
 		line-height 24px
-		color rgb(147, 153, 159)
-		.icon
-			font-size 24px
-			line-height 24px
-			&.icon-active
-				color rgb(0, 160, 220)
+		&.icon-active
+			color rgb(0, 160, 220)
 .food-e-list
 	box-sizing border-box
 	padding 18px
@@ -394,5 +395,5 @@ export default {
 .bg-leave-active
 	transform translateX(400px)
 .icon-thumb_up
-	color rgb(0,160,220)!important
+	color rgb(0, 160, 220) !important
 </style>
