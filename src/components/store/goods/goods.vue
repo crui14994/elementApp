@@ -65,7 +65,7 @@ import cartControl from "../../common/cartcontrol/cartcontrol";
 import BScroll from "better-scroll";
 import cart from "../../common/cart/cart";
 import food from "../food/food";
-
+import { formatDate } from "../../../common/js/date.js";
 const ERR_OK = 0;
 
 export default {
@@ -193,6 +193,9 @@ export default {
       if (!event._constructed) {
         return;
       }
+      item.ratings.forEach((food)=>{
+          food.rateTime=formatDate(new Date(food.rateTime),"yyyy-MM-dd hh:mm:ss");
+      })
       this.selectedFood=item;
       this.$refs.food.show();
     }
@@ -203,6 +206,8 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="stylus">
 @import '../../../common/stylus/mixin'
+.goods
+    padding-bottom 45px
 .cart-box
     width 100%
     height 58px
@@ -220,6 +225,7 @@ export default {
         float left
         font-size 12px
         overflow hidden
+        box-sizing border-box
         .left-menu
             li
                 width 100%

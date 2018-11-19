@@ -76,7 +76,6 @@ import cartControl from "../../common/cartcontrol/cartcontrol";
 import BScroll from "better-scroll";
 import labelBox from "../../common/labelBox/labelBox";
 import Vue from "vue";
-import { formatDate } from "../../../common/js/date.js";
 
 export default {
   name: "food",
@@ -89,7 +88,6 @@ export default {
     return {
       foodShow: false, //商品详情是否显示
       empty: false, //是否只看有内容的评价
-      ratingsType: undefined, //推荐为0，吐槽为1,100为全部
       filter: false, //是否显示没有内容的评价
       type: 2 //默认显示全部评价
     };
@@ -99,13 +97,19 @@ export default {
     labelBox: labelBox
   },
   created() {
-    // this._initScroll();
   },
   mounted() {
+		
     setTimeout(() => {
       this._initScroll();
-    }, 20);
-  },
+		}, 20);
+		
+	},
+	watch:{
+		foodShow(){
+			this._initScroll();
+		}
+	},
   computed: {
     description() {
       if (!this.food.description) {
@@ -115,6 +119,7 @@ export default {
       }
     },
     selectArr() {
+			
       let ratingArr = [];
       if (this.type == 2) {
         ratingArr = this.food.ratings;
@@ -124,11 +129,6 @@ export default {
             ratingArr.push(rating);
           }
         });
-			}
-			if(ratingArr){
-				ratingArr.forEach(rating=>{
-						rating.rateTime=formatDate(new Date(rating.rateTime),"yyyy-MM-dd hh:mm:ss");
-				})
 			}
       return ratingArr;
     },
@@ -144,9 +144,6 @@ export default {
   methods: {
     /*初始化滚动条*/
     _initScroll() {
-      // this.food.ratings.forEach(rating=>{
-
-      // })
       this.$nextTick(() => {
         if (!this.scroll) {
           this.scroll = new BScroll(this.$refs.foodScroll, {

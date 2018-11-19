@@ -154,7 +154,7 @@ export default {
     top: 0
     left: 0
     padding-top: 174px
-    padding-bottom 45px
+    // padding-bottom 45px
     box-sizing: border-box
     height: 100%
 

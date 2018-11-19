@@ -5,9 +5,10 @@
 			<!-- 商家顶部信息 -->
 			<div class="header">
 				<div class="header-top">
-					<div class="collection">
-						<span class="icon"><i class="icon-favorite"></i></span>
-						<p class="icon-txt">收藏</p>
+					<div class="collection" @click="collection($event)" >
+						<span class="icon" :class="{'active':isCollection}"><i class="icon-favorite"></i></span>
+						<p class="icon-txt" v-show="!isCollection">收藏</p>
+						<p class="icon-txt" v-show="isCollection">已收藏</p>
 					</div>
 					<div class="top-left">
 						<p class="left-tit">{{seller.name}}</p>
@@ -103,7 +104,8 @@ export default {
   name: "merchants",
   data() {
     return {
-		imgsArr:["decrease","discount","special","invoice","guarantee"]
+		imgsArr:["decrease","discount","special","invoice","guarantee"],
+		isCollection:false //是否收藏
 	};
   },
   props: {
@@ -145,9 +147,16 @@ export default {
 			})
 		  }else{
 			this.scroll.refresh(); 
+		  }  
+	  },
+	//   收藏
+	collection(event){
+		if (!event._constructed) {
+        	return;
 		  }
-		  
-	  }
+		  console.log(0)
+		this.isCollection=!this.isCollection;
+	}
   }
 };
 </script>
